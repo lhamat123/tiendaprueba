@@ -1,0 +1,230 @@
+{
+  "tienda": {
+    "nombre": "CHINO",
+    "whatsapp": "",
+    "slogan": "Venta al por mayor de producción local",
+    "descripcion": "CHINO se especializa en la venta al por mayor de productos de desarrollo local: calidad garantizada y precios competitivos.",
+    "pedidosCerrados": true,
+    "bannerImg": "",
+    "ocultarAgotadosCliente": false
+  },
+  "mesas": [
+    {
+      "id": 1,
+      "nombre": "Dpto. 1",
+      "ocultoCliente": false
+    },
+    {
+      "id": 2,
+      "nombre": "Dpto. 2",
+      "ocultoCliente": false
+    },
+    {
+      "id": 3,
+      "nombre": "Dpto. 3",
+      "ocultoCliente": false
+    },
+    {
+      "id": 4,
+      "nombre": "Dpto. 4",
+      "ocultoCliente": false
+    }
+  ],
+  "articulos": {
+    "1": [
+      {
+        "id": 102,
+        "nombre": "Playera lisa",
+        "cat": "Ropa",
+        "stock": 29,
+        "precioVenta": 0,
+        "costoUnit": 55,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 103,
+        "nombre": "Falda floral",
+        "cat": "Ropa",
+        "stock": 13,
+        "precioVenta": 0,
+        "costoUnit": 95,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 104,
+        "nombre": "Cinturón piel",
+        "cat": "Accesorios",
+        "stock": 16,
+        "precioVenta": 0,
+        "costoUnit": 40,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 105,
+        "nombre": "Bolsa tela",
+        "cat": "Accesorios",
+        "stock": 9,
+        "precioVenta": 0,
+        "costoUnit": 130,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 101,
+        "nombre": "Blusa manga corta",
+        "cat": "Ropa",
+        "stock": 20,
+        "precioVenta": 100,
+        "costoUnit": 80,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      }
+    ],
+    "2": [
+      {
+        "id": 201,
+        "nombre": "Aretes plata",
+        "cat": "Joyería",
+        "stock": 40,
+        "precioVenta": 0,
+        "costoUnit": 35,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 202,
+        "nombre": "Collar cadena",
+        "cat": "Joyería",
+        "stock": 23,
+        "precioVenta": 0,
+        "costoUnit": 60,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 203,
+        "nombre": "Pulsera charms",
+        "cat": "Joyería",
+        "stock": 35,
+        "precioVenta": 0,
+        "costoUnit": 30,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 204,
+        "nombre": "Anillo ajustable",
+        "cat": "Joyería",
+        "stock": 28,
+        "precioVenta": 0,
+        "costoUnit": 25,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      }
+    ],
+    "3": [
+      {
+        "id": 301,
+        "nombre": "Figura cerámica",
+        "cat": "Artesanías",
+        "stock": 12,
+        "precioVenta": 0,
+        "costoUnit": 90,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 302,
+        "nombre": "Llavero bordado",
+        "cat": "Artesanías",
+        "stock": 50,
+        "precioVenta": 0,
+        "costoUnit": 18,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 303,
+        "nombre": "Vela aromática",
+        "cat": "Artesanías",
+        "stock": 22,
+        "precioVenta": 0,
+        "costoUnit": 40,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 304,
+        "nombre": "Cuadro madera",
+        "cat": "Arte",
+        "stock": 6,
+        "precioVenta": 0,
+        "costoUnit": 180,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      }
+    ],
+    "4": [
+      {
+        "id": 401,
+        "nombre": "Miel 500g",
+        "cat": "Alimentos",
+        "stock": 24,
+        "precioVenta": 0,
+        "costoUnit": 50,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 402,
+        "nombre": "Mermelada artesanal",
+        "cat": "Alimentos",
+        "stock": 20,
+        "precioVenta": 0,
+        "costoUnit": 38,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 403,
+        "nombre": "Café molido 250g",
+        "cat": "Alimentos",
+        "stock": 15,
+        "precioVenta": 0,
+        "costoUnit": 65,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      },
+      {
+        "id": 404,
+        "nombre": "Dulces bolsa 200g",
+        "cat": "Alimentos",
+        "stock": 30,
+        "precioVenta": 0,
+        "costoUnit": 22,
+        "uVenta": "",
+        "imgRefs": [],
+        "ocultoCliente": false
+      }
+    ]
+  }
+}

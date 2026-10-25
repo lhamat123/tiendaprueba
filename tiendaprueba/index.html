@@ -1,0 +1,552 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tienda online</title>
+<meta name="description" content="Catálogo y pedidos online">
+<meta name="theme-color" content="#1a1814">
+<style>
+/* ── Reset & tokens ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#1a1814;--bg:#f4f1eb;--card:#ffffff;--border:#e0dbd0;--muted:#9a9080;--faint:#c8c0b0;
+  --accent:#e07a30;--green:#2d9e5f;--red:#d94f4f;--yellow:#c98a1a;
+  --r:16px;--r2:12px;
+  font-family:'Inter',system-ui,sans-serif;
+}
+@media(prefers-color-scheme:dark){:root{
+  --ink:#f0ece3;--bg:#18150f;--card:#211e17;--border:#352f22;--muted:#7a7060;--faint:#403830;
+}}
+body{background:var(--bg);color:var(--ink);min-height:100vh}
+button{cursor:pointer;font-family:inherit}
+a{color:var(--accent)}
+img{display:block;max-width:100%}
+
+/* ── Utilidades ── */
+.toast-box{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 20px;border-radius:30px;font-size:13px;font-weight:600;color:#fff;background:#333;box-shadow:0 4px 16px rgba(0,0,0,.25);opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+.toast.on{opacity:1;transform:translateY(0)}
+.toast.ok{background:var(--green)}.toast.err{background:var(--red)}
+
+/* ── Header ── */
+.sh-top{position:sticky;top:0;z-index:120;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid var(--border)}
+.sh-top-in{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:12px;padding:12px 20px}
+.sh-logo{display:flex;align-items:center;gap:10px;cursor:default;flex-shrink:0}
+.sh-logo img{width:38px;height:38px;border-radius:10px;object-fit:cover}
+.sh-logo-name{font-weight:800;font-size:18px;letter-spacing:-.02em}
+.sh-search{flex:1;display:flex;align-items:center;gap:8px;background:var(--bg);border:1.5px solid var(--border);border-radius:30px;padding:8px 16px;max-width:420px}
+.sh-search:focus-within{border-color:var(--accent)}
+.sh-search input{flex:1;border:none;background:none;outline:none;font-size:14px;color:var(--ink)}
+.sh-cart-btn{display:flex;align-items:center;gap:8px;background:var(--ink);color:var(--card);border:none;border-radius:30px;padding:9px 16px;font-size:13px;font-weight:700;transition:opacity .15s}
+.sh-cart-btn:hover{opacity:.85}
+.sh-badge{min-width:18px;height:18px;padding:0 4px;border-radius:20px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.cerrado-bar{background:#fef2f2;color:var(--red);text-align:center;padding:10px;font-size:13px;font-weight:700;border-bottom:1.5px solid var(--red)}
+
+/* ── Hero ── */
+.sh-hero{max-width:1180px;margin:20px auto 0;padding:0 20px}
+.sh-hero-in{border-radius:24px;overflow:hidden;min-height:220px;display:flex;align-items:center;background:linear-gradient(135deg,#2a2118 0%,#1a1610 100%);position:relative}
+.sh-hero-in img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.45}
+.sh-hero-body{position:relative;z-index:2;padding:36px 40px;max-width:560px}
+.sh-hero-eye{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#e8a878;margin-bottom:10px;font-weight:600}
+.sh-hero-h{font-weight:800;font-size:clamp(24px,4vw,40px);line-height:1.05;color:#fdf8f1;margin-bottom:10px}
+.sh-hero-h em{color:#e8893a;font-style:normal}
+.sh-hero-p{font-size:14px;color:#d8cdbe;line-height:1.55;margin-bottom:18px}
+.sh-hero-stats{display:flex;gap:22px}
+.sh-hero-stats .s b{font-weight:800;font-size:20px;color:#fff;display:block}
+.sh-hero-stats .s span{font-size:11px;color:#bcae9d}
+@media(max-width:600px){.sh-hero-body{padding:28px 24px}}
+
+/* ── Catálogo ── */
+.sh-body{max-width:1180px;margin:0 auto;padding:24px 20px 80px}
+.sh-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+.sh-cat{border:1.5px solid var(--border);background:var(--card);color:var(--muted);border-radius:30px;padding:7px 16px;font-size:13px;font-weight:500;transition:all .15s}
+.sh-cat.on,.sh-cat:hover{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.sh-secline{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.sh-secline h2{font-size:18px;font-weight:700}
+.sh-secline .c{font-size:12px;color:var(--muted)}
+.sh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+@media(max-width:480px){.sh-grid{grid-template-columns:repeat(2,1fr);gap:10px}}
+
+/* ── Tarjeta producto ── */
+.sh-prod{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column}
+.sh-prod:hover{box-shadow:0 6px 20px rgba(0,0,0,.1);transform:translateY(-2px)}
+.sh-prod-img{aspect-ratio:1;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:42px;position:relative;overflow:hidden;cursor:pointer}
+.sh-prod-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.sh-prod-out{position:absolute;inset:0;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;letter-spacing:.05em}
+.sh-prod-tag{position:absolute;top:8px;left:8px;background:var(--yellow);color:#fff;border-radius:20px;padding:3px 9px;font-size:11px;font-weight:700}
+.sh-prod-body{padding:12px;flex:1;display:flex;flex-direction:column;gap:4px}
+.sh-prod-cat{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.sh-prod-nom{font-size:14px;font-weight:600;line-height:1.3;flex:1}
+.sh-prod-foot{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.sh-prod-price{font-weight:800;font-size:16px}
+.sh-add{width:32px;height:32px;border-radius:50%;border:none;background:var(--ink);color:var(--card);font-size:20px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.sh-add:hover:not(:disabled){background:var(--accent)}
+.sh-add:disabled{opacity:.35;cursor:not-allowed}
+.sh-empty{grid-column:1/-1;text-align:center;padding:60px 20px;color:var(--muted)}
+.sh-empty .e{font-size:40px;display:block;margin-bottom:12px}
+
+/* ── Carrito (drawer) ── */
+.sh-cart-ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s}
+.sh-cart-ov.on{opacity:1;pointer-events:auto}
+.sh-cart{position:fixed;top:0;right:0;bottom:0;width:min(420px,100vw);background:var(--card);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);box-shadow:-6px 0 30px rgba(0,0,0,.15)}
+.sh-cart.on{transform:none}
+.sh-cart-h{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border);font-weight:700;font-size:17px}
+.sh-cart-x{background:none;border:1.5px solid var(--border);border-radius:50%;width:32px;height:32px;font-size:18px;color:var(--muted)}
+.sh-cart-items{flex:1;overflow-y:auto;padding:16px}
+.sh-cart-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:14px}
+.sh-cart-empty .e{font-size:36px;display:block;margin-bottom:12px}
+.sh-cart-f{padding:16px;border-top:1px solid var(--border)}
+.sh-cart-tot{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:15px}
+.sh-cart-tot b{font-size:20px;font-weight:800}
+.sh-cart-row{display:flex;gap:8px}
+.sh-checkout{width:100%;padding:14px;border:none;border-radius:var(--r2);background:var(--ink);color:var(--card);font-size:15px;font-weight:700;font-family:inherit;transition:opacity .15s}
+.sh-checkout:hover{opacity:.85}
+.sh-cancel{padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--r2);background:none;color:var(--muted);font-family:inherit;font-size:13px}
+.sh-wa{width:100%;padding:14px;border:none;border-radius:var(--r2);background:#25d366;color:#fff;font-size:15px;font-weight:700;font-family:inherit;margin-bottom:8px}
+.sh-ci{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.sh-ci:last-child{border-bottom:none}
+.sh-ci-img{width:56px;height:56px;border-radius:10px;object-fit:cover;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.sh-ci-b{flex:1;min-width:0}
+.sh-ci-nom{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sh-ci-price{font-size:12px;color:var(--muted);margin:2px 0}
+.sh-ci-ctrl{display:flex;align-items:center;gap:10px;margin-top:6px}
+.sh-qbtn{width:26px;height:26px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);color:var(--ink);font-size:16px;display:flex;align-items:center;justify-content:center}
+.sh-qn{font-weight:700;font-size:15px;min-width:20px;text-align:center}
+.sh-ci-sub{font-weight:700;font-size:15px;white-space:nowrap}
+.sh-ci-del{display:block;font-size:11px;color:var(--muted);background:none;border:none;text-decoration:underline;margin-top:4px}
+.sh-ok{text-align:center;padding:40px 20px}
+.sh-ok .ic{font-size:48px;color:var(--green);display:block;margin-bottom:12px}
+.sh-ok h3{font-size:20px;font-weight:800;margin-bottom:8px}
+.sh-ok p{font-size:14px;color:var(--muted);line-height:1.5}
+.sh-form label{display:block;font-size:12px;font-weight:600;color:var(--ink);margin:10px 0 4px}
+.sh-form input,.sh-form textarea{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;background:var(--bg);color:var(--ink);font-family:inherit}
+.sh-form input:focus,.sh-form textarea:focus{outline:none;border-color:var(--accent)}
+
+/* ── Cargando ── */
+#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;z-index:300;transition:opacity .3s}
+#loading.out{opacity:0;pointer-events:none}
+.spin{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#error-box{display:none;text-align:center;color:var(--muted);font-size:14px;line-height:1.6}
+#error-box b{color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- Pantalla de carga -->
+<div id="loading">
+  <div class="spin"></div>
+  <div style="font-size:14px;color:var(--muted)" id="load-msg">Cargando tienda…</div>
+  <div id="error-box"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast-box" id="toast-box"></div>
+
+<!-- Carrito (drawer) -->
+<div class="sh-cart-ov" id="sh-cart-ov" onclick="shCloseCart()"></div>
+<aside class="sh-cart" id="sh-cart">
+  <div class="sh-cart-h"><span>Tu carrito</span><button class="sh-cart-x" onclick="shCloseCart()">×</button></div>
+  <div class="sh-cart-items" id="sh-cart-items"></div>
+  <div class="sh-cart-f" id="sh-cart-f"></div>
+</aside>
+
+<!-- Tienda -->
+<div id="app"></div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   TIENDA ONLINE INDEPENDIENTE
+   Lee los datos del servidor POS en la misma red.
+   Si se sirve desde GitHub Pages, apunta a la IP/URL
+   del servidor configurada en SRV_URL abajo.
+   ══════════════════════════════════════════════════ */
+
+// ▼▼▼ CAMBIA ESTA URL a la IP de tu servidor POS ▼▼▼
+const SRV_URL = '';   // ej: 'http://192.168.1.10:8080'
+// ▲▲▲ Deja vacío si la tienda se sirve DESDE el mismo servidor ▲▲▲
+
+const SRV = SRV_URL || (location.origin.includes('github.io') ? '' : window.location.origin);
+
+/* ─── Estado ─── */
+let TIENDA = { nombre:'Mi Tienda', whatsapp:'', slogan:'', descripcion:'', pedidosCerrados:false, bannerImg:'' };
+let articulos = [];   // [{id, nombre, cat, stock, precioVenta, costoUnit, uVenta, imgRefs, ocultoCliente}]
+let shCart = [];
+let shCat  = '__all__';
+let shQuery = '';
+let shView  = 'cart';
+let _lastOrder = null;
+
+/* ─── Helpers ─── */
+const $ = id => document.getElementById(id);
+const num = v => isFinite(+v) ? +v : 0;
+const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const fmt = n => new Intl.NumberFormat('es',{minimumFractionDigits:2,maximumFractionDigits:2}).format(num(n));
+
+function toast(msg, type=''){
+  const box=$('toast-box'); if(!box) return;
+  const t=document.createElement('div'); t.className='toast'+(type?' '+type:''); t.textContent=msg;
+  box.appendChild(t); requestAnimationFrame(()=>t.classList.add('on'));
+  setTimeout(()=>{ t.classList.remove('on'); setTimeout(()=>t.remove(),300); },2800);
+}
+
+function artById(id){ return articulos.find(a=>String(a.id)===String(id)); }
+function precioLista(a){ return num(a.precioVenta)>0 ? num(a.precioVenta) : num(a.costoUnit)*1.1; }
+function imgRefs(a){ return a.imgRefs&&a.imgRefs.length?a.imgRefs:(a.imgRef?[a.imgRef]:[]); }
+
+function shSaveCart(){ try{ localStorage.setItem('tienda_cart',JSON.stringify(shCart)); }catch(e){} }
+function shCartCount(){ return shCart.reduce((s,i)=>s+i.qty,0); }
+function shCartTotal(){ return shCart.reduce((s,i)=>{ const a=artById(i.id); return s+(a?precioLista(a)*i.qty:0); },0); }
+function syncBadge(){ const b=$('sh-badge'); if(b) b.textContent=shCartCount(); }
+
+/* ─── Cargar datos del servidor ─── */
+function procesarData(d){
+  const t = d.tienda||{};
+  Object.assign(TIENDA, t);
+  const ocultarAgot = !!TIENDA.ocultarAgotadosCliente;
+  const vistos = new Set();
+  const mesas  = d.mesas||[];
+  const arts   = d.articulos||{};
+  articulos.length = 0;
+  mesas.forEach(m=>{
+    if(m.ocultoCliente) return;
+    (arts[m.id]||[]).forEach(a=>{
+      if(a.ocultoCliente) return;
+      if(ocultarAgot && !(num(a.stock)>0)) return;
+      if(vistos.has(String(a.id))) return;
+      vistos.add(String(a.id));
+      articulos.push(a);
+    });
+  });
+  try{ shCart=JSON.parse(localStorage.getItem('tienda_cart')||'[]'); }catch(e){ shCart=[]; }
+}
+
+async function cargarDatos(){
+  const base = SRV || '';
+  const $lm  = $('load-msg');
+
+  // 1️⃣ Intentar servidor POS en vivo (API estilo GitHub que usa server.py)
+  try {
+    if($lm) $lm.textContent = 'Conectando con el servidor…';
+    const pfx = base+'/repos/lhamat123/tienda/contents/';
+    const [rdb, rtd] = await Promise.all([
+      fetch(pfx+'sahara-db.json',     {cache:'no-store', signal: AbortSignal.timeout(5000)}),
+      fetch(pfx+'sahara-tienda.json', {cache:'no-store', signal: AbortSignal.timeout(5000)})
+    ]);
+    if(!rdb.ok) throw new Error('sin db');
+    const ghDb  = await rdb.json();
+    const ghTda = rtd.ok ? await rtd.json() : null;
+    // El servidor devuelve el contenido en base64 dentro de {content:"..."}
+    const db  = JSON.parse(atob((ghDb.content||'').replace(/\n/g,'')));
+    const tda = ghTda ? JSON.parse(atob((ghTda.content||'').replace(/\n/g,''))) : {};
+    const d = {
+      tienda: {
+        nombre:      tda.nombre      || 'Mi Tienda',
+        whatsapp:    tda.whatsapp    || '',
+        slogan:      tda.slogan      || '',
+        descripcion: tda.descripcion || '',
+        pedidosCerrados: !!tda.pedidosCerrados,
+        bannerImg:   tda.bannerImg   || '',
+        ocultarAgotadosCliente: !!tda.ocultarAgotadosCliente
+      },
+      mesas:     (db.mesas||[]).map(m=>({id:m.id, nombre:m.nombre, ocultoCliente:!!m.ocultoCliente})),
+      articulos: db.articulos || {}
+    };
+    procesarData(d);
+    mostrarTienda();
+    return;
+  } catch(e){}
+
+  // 2️⃣ Fallback: leer data.json del repo (catálogo estático)
+  try {
+    if($lm) $lm.textContent = 'Cargando catálogo…';
+    const r2 = await fetch('./data.json', {cache:'no-store'});
+    if(!r2.ok) throw new Error('sin data.json');
+    const d2 = await r2.json();
+    procesarData(d2);
+    // banner de aviso: datos pueden no ser en tiempo real
+    document.body.insertAdjacentHTML('afterbegin',
+      `<div style="background:#fff8e1;color:#7a5c00;text-align:center;padding:8px 14px;font-size:12px;border-bottom:1px solid #f0d060">
+        📋 Mostrando catálogo guardado — el stock puede no estar actualizado en tiempo real
+      </div>`);
+    mostrarTienda();
+    return;
+  } catch(e){}
+
+  // 3️⃣ Sin datos disponibles
+  const eb=$('error-box');
+  if(eb){
+    eb.style.display='block';
+    eb.innerHTML=`<b>No se pudo cargar el catálogo.</b><br><br>
+    El servidor POS no está disponible y no hay<br>catálogo guardado (<code>data.json</code>) en el repo.<br><br>
+    <span style="font-size:12px">Exporta el catálogo desde el POS →<br>
+    <strong>Configuración → Exportar catálogo para tienda online</strong></span>`;
+  }
+  if($lm) $lm.style.display='none';
+  document.querySelector('.spin').style.display='none';
+}
+
+/* ─── Render principal ─── */
+function mostrarTienda(){
+  const loading=$('loading');
+  if(loading){ loading.classList.add('out'); setTimeout(()=>loading.remove(),400); }
+
+  const cats  = [...new Set(articulos.map(a=>a.cat||'General'))].sort();
+  const disp  = articulos.filter(a=>num(a.stock)>0).length;
+  const banner= TIENDA.bannerImg||'';
+
+  const app=$('app');
+  app.innerHTML = `
+  <header class="sh-top">
+    <div class="sh-top-in">
+      <div class="sh-logo">
+        ${banner?`<img src="${esc(banner)}" alt="">`:
+          `<div style="width:38px;height:38px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:20px">🛍️</div>`}
+        <span class="sh-logo-name">${esc(TIENDA.nombre||'Mi Tienda')}</span>
+      </div>
+      <label class="sh-search">
+        <span>🔍</span>
+        <input type="search" id="sh-q" placeholder="Buscar…" oninput="buscar(this.value)">
+      </label>
+      <button class="sh-cart-btn" onclick="abrirCarrito()">
+        🛒 Carrito <span class="sh-badge" id="sh-badge">${shCartCount()}</span>
+      </button>
+    </div>
+  </header>
+
+  ${TIENDA.pedidosCerrados?`<div class="cerrado-bar">🔒 Los pedidos están pausados. Puedes ver el catálogo pero no hacer pedidos.</div>`:''}
+
+  <section class="sh-hero">
+    <div class="sh-hero-in">
+      ${banner?`<img src="${esc(banner)}" alt="">` : ''}
+      <div class="sh-hero-body">
+        <div class="sh-hero-eye">${esc(TIENDA.nombre||'Mi Tienda')}</div>
+        <h1 class="sh-hero-h">${TIENDA.slogan?esc(TIENDA.slogan)+' <em>.</em>':'Bienvenido a <em>nuestra tienda</em>'}</h1>
+        ${TIENDA.descripcion?`<p class="sh-hero-p">${esc(TIENDA.descripcion)}</p>`:''}
+        <div class="sh-hero-stats">
+          <div class="s"><b>${articulos.length}</b><span>productos</span></div>
+          <div class="s"><b>${disp}</b><span>disponibles</span></div>
+          <div class="s"><b>${cats.length}</b><span>categorías</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sh-body">
+    <div class="sh-cats" id="sh-cats">
+      <button class="sh-cat on" onclick="setCat('__all__',this)">Todo</button>
+      ${cats.map(c=>`<button class="sh-cat" onclick="setCat('${esc(c).replace(/'/g,"\\'")}',this)">${esc(c)}</button>`).join('')}
+    </div>
+    <div class="sh-secline">
+      <h2 id="sh-sec-title">Todos los productos</h2>
+      <span class="c" id="sh-sec-count"></span>
+    </div>
+    <div class="sh-grid" id="sh-grid"></div>
+  </div>`;
+
+  renderGrid();
+  resolverImagenes(articulos);
+}
+
+/* ─── Grid de productos ─── */
+function renderGrid(){
+  let prods = articulos.slice();
+  if(shCat!=='__all__') prods=prods.filter(a=>(a.cat||'General')===shCat);
+  if(shQuery.trim()){ const q=shQuery.toLowerCase(); prods=prods.filter(a=>(a.nombre||'').toLowerCase().includes(q)); }
+  prods.sort((a,b)=>(num(b.stock)>0)-(num(a.stock)>0));
+
+  const grid=$('sh-grid'), cnt=$('sh-sec-count'), ttl=$('sh-sec-title');
+  if(!grid) return;
+  if(cnt) cnt.textContent=prods.length+' artículo'+(prods.length===1?'':'s');
+  if(ttl) ttl.textContent=shCat==='__all__'?'Todos los productos':shCat;
+
+  grid.innerHTML = prods.length
+    ? prods.map(prodCard).join('')
+    : `<div class="sh-empty"><span class="e">🔍</span>Sin resultados${shQuery?` para "${esc(shQuery)}"`:''}.</div>`;
+
+  resolverImagenes(prods.filter(a=>imgRefs(a).length));
+}
+
+function prodCard(a){
+  const bloq  = !!TIENDA.pedidosCerrados;
+  const out   = num(a.stock)<=0 || bloq;
+  const med   = !!(a.esMedido||a.uVenta&&['kg','g','L','mL'].includes(a.uVenta));
+  const uLbl  = med?` <span style="font-size:11px;color:var(--muted);font-weight:400">/ ${a.uVenta||'kg'}</span>`:'';
+  const refs  = imgRefs(a);
+  const imgEl = refs.length ? `<img id="pi-${a.id}" alt="${esc(a.nombre)}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover">` : '🛍️';
+  const stockTag = num(a.stock)<=0
+    ? '<div class="sh-prod-out">Agotado</div>'
+    : (!med&&num(a.stock)<=3?`<span class="sh-prod-tag">Últimas ${num(a.stock)}</span>`:'');
+  return `<div class="sh-prod">
+    <div class="sh-prod-img" onclick="${out?'':'addItem('+a.id+')'}" style="cursor:${out?'default':'pointer'}">
+      ${imgEl}${stockTag}
+    </div>
+    <div class="sh-prod-body">
+      <div class="sh-prod-cat">${esc(a.cat||'General')}</div>
+      <div class="sh-prod-nom">${esc(a.nombre)}</div>
+      <div class="sh-prod-foot">
+        <span class="sh-prod-price">${fmt(precioLista(a))}${uLbl}</span>
+        <button class="sh-add" onclick="addItem(${a.id})" ${out?'disabled':''}>+</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ─── Imágenes: las sirve el mismo servidor POS ─── */
+async function resolverImagenes(prods){
+  prods.forEach(async a=>{
+    const refs=imgRefs(a); if(!refs.length) return;
+    const el=document.getElementById('pi-'+a.id); if(!el||el.src) return;
+    for(const ref of refs){
+      try{
+        const url = ref.startsWith('data:') ? ref : (SRV||'')+'/img/'+encodeURIComponent(ref);
+        const ok  = await new Promise(res=>{ const i=new Image(); i.onload=()=>res(true); i.onerror=()=>res(false); i.src=url; });
+        if(ok){ const e=document.getElementById('pi-'+a.id); if(e) e.src=url; return; }
+      }catch(e){}
+    }
+  });
+}
+
+/* ─── Filtros ─── */
+function setCat(cat, btn){
+  shCat=cat;
+  document.querySelectorAll('.sh-cat').forEach(b=>b.classList.remove('on'));
+  if(btn) btn.classList.add('on');
+  renderGrid();
+}
+function buscar(v){ shQuery=v; renderGrid(); }
+
+/* ─── Carrito ─── */
+function addItem(id){
+  if(TIENDA.pedidosCerrados){ toast('Los pedidos están pausados por ahora','err'); return; }
+  const a=artById(id); if(!a){ return; }
+  if(num(a.stock)<=0){ toast('Producto agotado','err'); return; }
+  const it=shCart.find(i=>i.id===id);
+  if(it){ if(it.qty>=num(a.stock)){ toast('Sin más stock','err'); return; } it.qty++; }
+  else shCart.push({id,qty:1});
+  shSaveCart(); syncBadge(); renderCarrito();
+  toast('✓ Agregado','ok');
+}
+function incItem(id){ const a=artById(id),it=shCart.find(i=>i.id===id); if(!it) return; if(a&&it.qty>=num(a.stock)){ toast('Sin más stock','err'); return; } it.qty++; shSaveCart(); renderCarrito(); syncBadge(); }
+function decItem(id){ const it=shCart.find(i=>i.id===id); if(!it) return; it.qty--; if(it.qty<=0) shCart=shCart.filter(i=>i.id!==id); shSaveCart(); renderCarrito(); syncBadge(); }
+function delItem(id){ shCart=shCart.filter(i=>i.id!==id); shSaveCart(); renderCarrito(); syncBadge(); }
+
+function abrirCarrito(){ shView='cart'; renderCarrito(); $('sh-cart-ov').classList.add('on'); $('sh-cart').classList.add('on'); }
+function shCloseCart(){ ['sh-cart-ov','sh-cart'].forEach(id=>$(id)?.classList.remove('on')); }
+
+function renderCarrito(){
+  const itemsEl=$('sh-cart-items'), footEl=$('sh-cart-f'); if(!itemsEl||!footEl) return;
+
+  if(shView==='done'){
+    itemsEl.innerHTML=`<div class="sh-ok"><span class="ic">✓</span><h3>¡Pedido enviado!</h3><p>Tu pedido quedó registrado. Si WhatsApp no se abrió solo, toca el botón verde.</p></div>`;
+    footEl.innerHTML=`<button class="sh-wa" onclick="enviarWA()">📲 Enviar por WhatsApp</button>
+      <button class="sh-checkout" style="background:var(--muted)" onclick="shView='cart';shCloseCart();renderGrid()">Seguir comprando</button>`;
+    return;
+  }
+
+  if(!shCart.length){
+    itemsEl.innerHTML=`<div class="sh-cart-empty"><span class="e">🛒</span>Tu carrito está vacío</div>`;
+    footEl.innerHTML=''; return;
+  }
+
+  itemsEl.innerHTML=shCart.map(i=>{
+    const a=artById(i.id); if(!a) return '';
+    const refs=imgRefs(a);
+    const imgEl=refs.length?`<img class="sh-ci-img" id="ci-${a.id}" alt="">`:`<div class="sh-ci-img">🛍️</div>`;
+    return `<div class="sh-ci">${imgEl}
+      <div class="sh-ci-b">
+        <div class="sh-ci-nom">${esc(a.nombre)}</div>
+        <div class="sh-ci-price">${fmt(precioLista(a))} c/u</div>
+        <div class="sh-ci-ctrl">
+          <button class="sh-qbtn" onclick="decItem('${a.id}')">−</button>
+          <span class="sh-qn">${i.qty}</span>
+          <button class="sh-qbtn" onclick="incItem('${a.id}')">+</button>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="sh-ci-sub">${fmt(precioLista(a)*i.qty)}</div>
+        <button class="sh-ci-del" onclick="delItem('${a.id}')">Quitar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  // resolver imágenes del carrito
+  shCart.forEach(i=>{ const a=artById(i.id); if(!a||!imgRefs(a).length) return; resolverImagenes([a]); });
+
+  const total=shCartTotal();
+  if(shView==='form'){
+    footEl.innerHTML=`<div class="sh-form">
+      <label>Tu nombre *</label>
+      <input id="sh-nom" placeholder="Nombre y apellido">
+      <label>Teléfono / WhatsApp</label>
+      <input id="sh-tel" placeholder="Opcional" inputmode="tel">
+      <label>Nota</label>
+      <textarea id="sh-nota" rows="2" placeholder="Dirección, referencias… (opcional)"></textarea>
+    </div>
+    <div class="sh-cart-tot" style="margin-top:12px"><span>Total</span><b>${fmt(total)}</b></div>
+    <button class="sh-checkout" onclick="confirmarPedido()">Confirmar pedido</button>
+    <button class="sh-ci-del" style="display:block;margin:10px auto 0;font-size:13px" onclick="shView='cart';renderCarrito()">← Volver</button>`;
+    setTimeout(()=>$('sh-nom')?.focus(),60);
+  } else {
+    footEl.innerHTML=`<div class="sh-cart-tot"><span>Total (${shCartCount()} art.)</span><b>${fmt(total)}</b></div>
+      <div class="sh-cart-row">
+        <button class="sh-checkout" onclick="shView='form';renderCarrito()">Realizar pedido →</button>
+        <button class="sh-cancel" onclick="if(confirm('¿Vaciar el carrito?')){shCart=[];shSaveCart();syncBadge();renderCarrito();}">Cancelar</button>
+      </div>`;
+  }
+}
+
+/* ─── Confirmar y enviar ─── */
+function confirmarPedido(){
+  if(TIENDA.pedidosCerrados){ toast('Pedidos pausados','err'); return; }
+  const nom=($('sh-nom')?.value||'').trim();
+  if(!nom){ toast('Escribe tu nombre','err'); $('sh-nom')?.focus(); return; }
+  const tel=($('sh-tel')?.value||'').trim();
+  const nota=($('sh-nota')?.value||'').trim();
+  const items=shCart.map(i=>{ const a=artById(i.id); return a?{id:a.id,nombre:a.nombre,cat:a.cat||'',precio:precioLista(a),qty:i.qty}:null; }).filter(Boolean);
+  const total=items.reduce((s,i)=>s+i.precio*i.qty,0);
+  const ahora=new Date();
+  _lastOrder={
+    id:Date.now(),
+    fecha:ahora.toISOString().slice(0,10),
+    hora:ahora.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}),
+    cliente:{nombre:nom,tel,nota},
+    items,total,estado:'pendiente'
+  };
+  // Intentar registrar en el servidor POS
+  fetch((SRV||'')+'/orden', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_lastOrder)})
+    .catch(()=>{});  // si falla, igual se envía por WA
+
+  shCart=[]; shSaveCart(); syncBadge();
+  shView='done'; renderCarrito();
+  toast('✓ Pedido realizado','ok');
+  enviarWA();
+}
+
+/* ─── WhatsApp ─── */
+function mensajeWA(o){
+  const L=['*Nuevo pedido — '+( TIENDA.nombre||'Tienda')+'*'];
+  L.push('Cliente: '+(o.cliente?.nombre||'—'));
+  if(o.cliente?.tel)  L.push('Tel: '+o.cliente.tel);
+  if(o.cliente?.nota) L.push('Nota: '+o.cliente.nota);
+  L.push(o.fecha+' '+o.hora);
+  L.push('');
+  (o.items||[]).forEach(i=>L.push('• '+i.qty+'× '+i.nombre+' — '+fmt(i.precio*i.qty)));
+  L.push('');
+  L.push('*Total: '+fmt(o.total)+'*');
+  return L.join('\n');
+}
+function enviarWA(){
+  if(!_lastOrder) return;
+  const num=(TIENDA.whatsapp||'').replace(/\D/g,'');
+  if(!num){ toast('El negocio aún no tiene WhatsApp configurado','err'); return; }
+  const url='https://wa.me/'+num+'?text='+encodeURIComponent(mensajeWA(_lastOrder));
+  try{ window.open(url,'_blank'); }catch(e){ location.href=url; }
+}
+
+/* ─── Init ─── */
+cargarDatos();
+</script>
+</body>
+</html>
